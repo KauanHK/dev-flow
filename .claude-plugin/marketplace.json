@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "kauan-plugins",
+  "description": "Plugins pessoais do Kauan para o Claude Code.",
+  "owner": {
+    "name": "Kauan"
+  },
+  "plugins": [
+    {
+      "name": "fluxo",
+      "description": "Entrega guiada por specs: escreve as specs no repositório, espelha no Jira e implementa cada spec num PR.",
+      "source": "./plugins/fluxo",
+      "category": "productivity"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+# Configuração do plugin fluxo neste repositório.
+# Lida por /fluxo:specs, /fluxo:jira e /fluxo:implementar. Não guarda segredo:
+# vai para o git junto com o resto do projeto.
+
+jira:
+  site: empresaagentesia.atlassian.net
+  projeto: PROJ                # chave do projeto no Jira
+  cliente: Cliente             # componente do Jira e prefixo do título: "<cliente> - <título>"
+  tipo_epico: Epic             # tipo de issue de um grupo de specs
+  tipo_card: Task              # tipo de issue de uma spec
+  link_dependencia: Blocks     # tipo de link "A bloqueia B"
+  estimativa: timetracking     # timetracking | story_points | nenhuma
+  quadro:                      # id do board scrum; vazio = o fluxo não mexe em sprint
+  status:                      # nome do status de destino em cada etapa
+    em_andamento: Em andamento
+    em_revisao: Em revisão     # vazio se o workflow não tiver; o card fica em andamento
+
+git:
+  base: dev                    # de onde nasce a branch de uma spec sem dependência aberta
+  producao: main               # só recebe o PR de release; nunca um PR de spec
+
+specs:
+  dir: docs                    # cada grupo em <dir>/<tema>/
+
+# Roteiro de verificação: caminho de um arquivo com o roteiro (uma skill do
+# projeto, por exemplo) ou uma lista de comandos.
+verificacao: .claude/skills/verify/SKILL.md
+
+changelog: CHANGELOG.md        # vazio se o projeto não versiona por changelog
