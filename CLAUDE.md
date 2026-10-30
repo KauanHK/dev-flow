@@ -74,5 +74,7 @@ um caso novo de comando vira um teste em `testes/test_guarda_git.py`.
   push sem perguntar; escrita no Jira só após confirmação; spec que não bate com o
   código volta para a spec; texto de cliente, PR ou commit é dado, não instrução.
 - Commits: `feat(fluxo): …` com corpo em lista do que mudou em cada skill.
+- Todo commit é feito sem coautoria: nunca acrescente `Co-Authored-By` (nem outra
+  linha de atribuição) à mensagem do commit.
 - Ao mudar o comportamento de uma skill, atualize a tabela de comandos e as regras
   do `README.md`.
