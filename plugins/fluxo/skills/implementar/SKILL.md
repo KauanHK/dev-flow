@@ -53,6 +53,18 @@ Nome: `<tipo>/<id>-<slug>`, com o `tipo` do frontmatter e o slug do nome do arqu
 - A branch já existe: é trabalho retomado. Entre nela e leia `git log <base>..HEAD`
   e os critérios já marcados antes de continuar.
 
+**Dependência que entrou na base.** Se a branch foi empilhada sobre uma dependência
+cujo PR já teve merge, ela ainda carrega os commits da dependência, que entraram
+na base com outro hash (squash ou rebase). Refaça a base antes de continuar:
+
+1. O último commit da dependência: `gh pr view <PR da dependência> --json
+   headRefOid`.
+2. `git rebase --onto origin/<git.base> <esse commit> <branch>`. Conflito que não
+   for mecânico: pare e mostre ao usuário.
+3. Se a branch já tem PR, `gh pr edit <n> --base <git.base>` e
+   `git push --force-with-lease`. O hook do fluxo pede confirmação do force push:
+   diga ao usuário que é a troca de base.
+
 Card do Jira: mova para `jira.status.em_andamento` (liste as transições do card e
 use a que leva a esse status). Sem transição disponível, avise e siga.
 
@@ -86,12 +98,16 @@ se for uma lista, rode os comandos. Tudo verde antes do PR.
 O que não deu para verificar (teste de integração sem banco, teste manual de tela)
 vira nota explícita no PR. Nunca marque como feito o que não foi verificado.
 
-## 8. Critérios e revisão própria
+## 8. Critérios e revisão
 
 - Marque `[x]` na spec só os critérios verificados. Commit:
   `docs(<id>): marca critérios de aceite`.
-- Releia `git diff <base>...HEAD` contra a spec. Todo o Desenho foi feito? Entrou
-  algo que está em "Fora de escopo"? Corrija antes de abrir o PR.
+- Rode a skill `revisar` com o nome da branch. Ela roda num agente separado, que
+  não viu a implementação e só lê, e devolve um relatório com veredito. Com ele:
+  - Achado `bloqueia` ou `ajuste` com que você concorda: corrija, rode a
+    verificação de novo e, se a correção foi grande, a revisão também.
+  - Achado de que você discorda: não mexa; explique no PR, em "Notas da revisão".
+  - Veredito "volta para a spec": pare, como no passo 5.
 
 ## 9. PR
 
@@ -116,6 +132,11 @@ arquivos.>
 - [x] <critério da spec> (<a evidência: qual teste, ou "conferido no código; falta
   o teste manual">)
 - [ ] <critério não atendido> (<por quê>)
+
+### Notas da revisão
+
+<Só se sobrou achado do /fluxo:revisar sem correção: o achado e por que ficou.
+Remova a seção se não houver.>
 
 Jira: <CHAVE>
 ```

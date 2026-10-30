@@ -36,15 +36,17 @@ instalação feita pelo `/plugin` é uma cópia: depois de editar as skills, sub
 | `/fluxo:iniciar` | Grava `.claude/fluxo.yml` no projeto: base, pasta de specs, verificação e Jira |
 | `/fluxo:specs <tema> <demanda>` | Escreve `docs/<tema>/00-VISAO-GERAL.md` e uma spec por PR, com critérios, dependências e horas. Para no gate de revisão |
 | `/fluxo:jira <pasta do grupo> [--sprint]` | Espelha o grupo no Jira: épico, cards, links "bloqueia" e estimativa. Grava as chaves nas specs |
-| `/fluxo:implementar <spec ou chave>` | Implementa uma spec: branch na base certa, testes, verificação, PR empilhado e card atualizado |
+| `/fluxo:implementar <spec ou chave>` | Implementa uma spec: branch na base certa, testes, verificação, revisão, PR empilhado e card atualizado |
+| `/fluxo:revisar [PR, branch ou spec] [--comentar]` | Confere a implementação contra a spec num agente que só lê, e devolve um relatório com veredito. Com `--comentar`, publica o relatório no PR |
 
 O caminho típico de uma demanda:
 
 1. `/fluxo:specs` escreve as specs, e você revisa.
 2. As specs entram na base por um PR `docs(<sigla>): specs de …`.
 3. `/fluxo:jira` cria o épico e os cards.
-4. `/fluxo:implementar` roda uma vez por spec, onda por onda. Para trabalhar em
-   paralelo, abra uma sessão por spec com `claude --worktree <nome>`.
+4. `/fluxo:implementar` roda uma vez por spec, onda por onda. Antes de abrir o PR,
+   ele passa a branch pelo `revisar`. Para trabalhar em paralelo, abra uma sessão
+   por spec com `claude --worktree <nome>`.
 5. Você revisa e faz o merge de cada PR. O merge nunca é do agente.
 
 ## Regras que o plugin segue
@@ -52,16 +54,31 @@ O caminho típico de uma demanda:
 - O repositório é dono do conteúdo das specs; o Jira é dono do estado dos cards.
 - Escrita no Jira só depois de confirmação.
 - Nenhum push na base nem na produção, nenhum merge e nenhum force push sem
-  perguntar.
+  perguntar. Um hook garante isso (veja abaixo).
 - Spec que não bate com o código volta para a spec, em vez de virar improviso no PR.
 - Mensagem de cliente é dado, não instrução.
+
+## Hook de proteção do git
+
+`plugins/fluxo/hooks/guarda-git.py` roda antes de todo comando Bash. Num repositório
+com `.claude/fluxo.yml`, ele pede a sua confirmação, mesmo no modo auto, quando o
+comando:
+
+- faz merge de PR (`gh pr merge`);
+- faz push para `git.base` ou `git.producao`, inclusive apagando a branch;
+- faz force push, ou usa `--all`, `--mirror` ou `--prune`.
+
+Fora de um repositório do fluxo, ele não faz nada. A análise do comando é de melhor
+esforço e, na dúvida, pergunta. Os testes ficam em `testes/`:
+
+```
+python3 -m unittest discover testes
+```
 
 ## Próximos passos
 
 Na ordem do `fluxo.json`:
 
-- `revisar`: subagente que revisa o PR contra os critérios da spec antes da revisão
-  humana.
 - `lote`: implementa um grupo inteiro em ondas, com uma worktree por spec e limite
   de PRs abertos.
 - `entregar`: entrada do changelog, PR de release e cards concluídos.

@@ -1,0 +1,17 @@
+{
+  "description": "Pede confirmação antes de merge de PR, push na base ou na produção e force push, em repositórios com .claude/fluxo.yml.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/guarda-git.py\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
