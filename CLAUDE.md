@@ -45,13 +45,19 @@ gravam no repositório do projeto:
 - `jira` espelha só as specs aprovadas (épico + cards + links "bloqueia") e grava
   a chave em `jira:` logo após criar cada issue, para ser idempotente. O repo é
   dono do conteúdo; o Jira, do estado — a skill nunca muda status.
-- `implementar` faz uma spec por execução: base escolhida pelas dependências (PR
-  aberto da dependência → empilha sobre a branch dela; merge feito → `git.base`,
-  com `rebase --onto` se a branch carregava os commits dela), branch
-  `<tipo>/<id>-<slug>`, commits `<tipo>(<id>): …`, chama `revisar` e abre o PR.
+- `implementar` recebe uma spec ou um grupo e orquestra da sessão principal, sem
+  escrever código: pergunta a base (se não souber) e a entrega (branches locais ou
+  PRs; nos PRs, se empilha), divide cada spec em etapas e chama os subagentes
+  `agents/implementador.md` (uma etapa por vez), `revisor.md` e `corretor.md`, com
+  no máximo 2 ciclos de correção. Base pelas dependências (PR aberto → empilha ou,
+  sem empilhar, a spec aguarda; merge feito → `git.base`, com `rebase --onto` se a
+  branch carregava os commits dela), branch `<tipo>/<id>-<slug>`, commits
+  `<tipo>(<id>): …`. Push, PR e Jira ficam com a sessão principal. Modelo e esforço
+  padrão estão no frontmatter dos agentes; `agentes` no `fluxo.yml` sobrescreve.
 - `revisar` roda com `context: fork` no agente `agents/revisor.md` (só leitura,
-  `allowed-tools` restritas a git/gh de leitura) e devolve um relatório com
-  veredito.
+  `allowed-tools` de git/gh de leitura) e devolve um relatório com veredito. O
+  `implementar` chama o mesmo agente pelo `Agent`, apontando para o `SKILL.md`, para
+  poder passar modelo e esforço.
 
 `implementar` e `jira` têm `disable-model-invocation: true`: só rodam por comando
 explícito do usuário.

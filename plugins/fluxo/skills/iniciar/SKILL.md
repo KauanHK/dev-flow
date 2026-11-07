@@ -27,6 +27,8 @@ de reescrever.
   Confirme a lista com o usuário.
 - **Changelog:** `CHANGELOG.md` na raiz, se existir e o `CLAUDE.md` descrever a
   regra de versão. Senão, deixe vazio.
+- **Agentes:** não pergunte. Mantenha a seção `agentes` comentada, com os padrões do
+  modelo, a menos que o usuário peça outro modelo ou esforço.
 
 ## 2. Jira
 
@@ -50,8 +52,10 @@ lista de ferramentas, ache o nome exato com `discover`; nunca invente um.
    `timetracking`. Senão, se tiver Story Points, `story_points`. Senão,
    `nenhuma`.
 7. Statuses (`listJiraStatuses`): o status de "em andamento" e o de "em
-   revisão". Se o workflow não tiver um status de revisão, deixe
-   `status.em_revisao` vazio.
+   revisão". O de revisão nem sempre tem esse nome (no DES é
+   `Implantação/Testes`): mostre ao usuário os outros statuses da categoria "em
+   andamento" e pergunte qual recebe o card quando o PR abre. Se nenhum servir,
+   deixe `status.em_revisao` vazio.
 8. Quadro (`listJiraBoards`): se o projeto tiver um board scrum, grave o id em
    `jira.quadro`. Sem board scrum, deixe vazio, e o fluxo não mexe em sprint.
 

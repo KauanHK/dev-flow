@@ -27,3 +27,10 @@ specs:
 verificacao: .claude/skills/verify/SKILL.md
 
 changelog: CHANGELOG.md        # vazio se o projeto não versiona por changelog
+
+# Opcional: troca o modelo e o esforço dos subagentes do /fluxo:implementar. Sem
+# esta seção valem os padrões abaixo; descomente só o que quiser mudar.
+# agentes:
+#   implementar: { modelo: sonnet, esforco: high }
+#   revisar: { modelo: sonnet, esforco: high }
+#   corrigir: { modelo: sonnet, esforco: medium }
