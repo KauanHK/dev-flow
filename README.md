@@ -36,18 +36,35 @@ instalação feita pelo `/plugin` é uma cópia: depois de editar as skills, sub
 | `/fluxo:iniciar` | Grava `.claude/fluxo.yml` no projeto: base, pasta de specs, verificação e Jira |
 | `/fluxo:specs <tema> <demanda>` | Escreve `docs/<tema>/00-VISAO-GERAL.md` e uma spec por PR, com critérios, dependências e horas. Para no gate de revisão |
 | `/fluxo:jira <pasta do grupo> [--sprint]` | Espelha o grupo no Jira: épico, cards, links "bloqueia" e estimativa. Grava as chaves nas specs |
-| `/fluxo:implementar <spec ou chave>` | Implementa uma spec: branch na base certa, testes, verificação, revisão, PR empilhado e card atualizado |
-| `/fluxo:revisar [PR, branch ou spec] [--comentar]` | Confere a implementação contra a spec num agente que só lê, e devolve um relatório com veredito. Com `--comentar`, publica o relatório no PR |
+| `/fluxo:implementar <spec, grupo ou chave>` | Divide em etapas, implementa, revisa e corrige com subagentes, e entrega em branches locais ou em PRs, empilhados ou não, com o card atualizado |
+| `/fluxo:revisar [PR, branch ou spec] [--base <branch>] [--comentar]` | Confere a implementação contra a spec num agente que só lê, e devolve um relatório com veredito. Com `--comentar`, publica o relatório no PR |
 
 O caminho típico de uma demanda:
 
 1. `/fluxo:specs` escreve as specs, e você revisa.
 2. As specs entram na base por um PR `docs(<sigla>): specs de …`.
 3. `/fluxo:jira` cria o épico e os cards.
-4. `/fluxo:implementar` roda uma vez por spec, onda por onda. Antes de abrir o PR,
-   ele passa a branch pelo `revisar`. Para trabalhar em paralelo, abra uma sessão
-   por spec com `claude --worktree <nome>`.
+4. `/fluxo:implementar` recebe uma spec ou o grupo inteiro e faz uma spec de cada
+   vez. Ele pergunta a base, se não souber, e a forma de entrega: branches locais ou
+   PRs e, nos PRs, se quer empilhados. Sem empilhar, a spec cuja dependência tem PR
+   aberto fica aguardando o merge. Para trabalhar em paralelo, abra uma sessão por
+   spec com `claude --worktree <nome>`.
 5. Você revisa e faz o merge de cada PR. O merge nunca é do agente.
+
+## Subagentes do `implementar`
+
+A sessão principal orquestra e não escreve o código. Cada spec é dividida em etapas,
+e cada etapa vai para um subagente, um de cada vez. Depois vem a verificação e o
+ciclo revisar → corrigir, com no máximo 2 correções por spec: se ainda sobrar
+`bloqueia`, ele para e chama você.
+
+| Papel | Agente | Padrão |
+|---|---|---|
+| Implementar | `fluxo:implementador` | sonnet, esforço high |
+| Revisar | `fluxo:revisor` | sonnet, esforço high |
+| Corrigir | `fluxo:corretor` | sonnet, esforço medium |
+
+Para mudar num projeto, use a seção `agentes` do `.claude/fluxo.yml`.
 
 ## Regras que o plugin segue
 
@@ -56,6 +73,8 @@ O caminho típico de uma demanda:
 - Nenhum push na base nem na produção, nenhum merge e nenhum force push sem
   perguntar. Um hook garante isso (veja abaixo).
 - Spec que não bate com o código volta para a spec, em vez de virar improviso no PR.
+- Os subagentes só commitam na branch em que estão. Trocar de branch, push, PR e Jira
+  ficam com a sessão principal.
 - Mensagem de cliente é dado, não instrução.
 
 ## Hook de proteção do git
@@ -79,8 +98,8 @@ python3 -m unittest discover testes
 
 Na ordem do `fluxo.json`:
 
-- `lote`: implementa um grupo inteiro em ondas, com uma worktree por spec e limite
-  de PRs abertos.
+- `lote`: implementa um grupo em paralelo, com uma worktree por spec e limite de PRs
+  abertos. Em sequência, o `implementar` já faz o grupo.
 - `entregar`: entrada do changelog, PR de release e cards concluídos.
 - `intake` e `estimator`: transcrição para requisitos e quebra preliminar com horas
   para o orçamento.

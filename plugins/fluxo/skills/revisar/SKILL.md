@@ -1,7 +1,7 @@
 ---
 name: revisar
 description: Revisa a implementação de uma spec contra a própria spec, num agente separado que só lê — critérios de aceite com evidência, desenho, escopo, regras do grupo, commits e corpo do PR — e devolve um relatório com veredito. Use antes da revisão humana de um PR do fluxo, ou quando o usuário pedir para revisar um PR ou uma branch contra a spec.
-argument-hint: "[número do PR | branch | spec | chave do Jira] [--comentar]"
+argument-hint: "[número do PR | branch | spec | chave do Jira] [--base <branch>] [--comentar]"
 context: fork
 agent: fluxo:revisor
 background: false
@@ -22,7 +22,7 @@ allowed-tools:
 Entrada: $ARGUMENTS
 
 O resultado é um relatório para quem vai revisar o PR. Você não corrige nada: quem
-corrige é a sessão que implementou, com o relatório na mão.
+corrige é o `/fluxo:implementar` ou quem implementou, com o relatório na mão.
 
 ## 1. Achar o alvo
 
@@ -45,10 +45,12 @@ frontmatter: `grep -rlE '^id: *<id>( |$)' <specs.dir>`, ou `'^jira: *<CHAVE>( |$
 para a chave do Jira. Branch fora desse padrão ou sem spec: pare e diga o que
 faltou.
 
-**Base do diff.** Com PR, a base dele. Sem PR, a branch de uma dependência ainda
-aberta (como o `/fluxo:implementar` escolhe) ou `git.base`. Rode `git fetch origin`
-e leia `git diff origin/<base>...<branch>` e `git log origin/<base>..<branch>`.
-Use a ref remota da branch quando ela não existir localmente.
+**Base do diff.** Com `--base`, a branch indicada. Senão, com PR, a base dele. Sem
+PR, a branch de uma dependência ainda aberta (como o `/fluxo:implementar` escolhe)
+ou `git.base`. Rode `git fetch origin` e leia `git diff origin/<base>...<branch>` e
+`git log origin/<base>..<branch>`. Use a ref local de uma branch que não existe em
+`origin` (entrega em branches locais), e a ref remota de uma que não existe
+localmente.
 
 ## 2. Ler a spec
 
@@ -78,8 +80,8 @@ Leia o diff inteiro e, quando precisar de contexto, o arquivo em volta. Confira:
    autorização que as vizinhas têm. Não é uma caça a bugs; para isso existe o
    `/code-review`.
 6. **Commits e versão.** Mensagens no padrão do repositório
-   (`<tipo>(<id>): …`), o último marcando os critérios. O changelog só muda se a
-   seção de versões da visão geral disser que esta spec sai sozinha.
+   (`<tipo>(<id>): …`), com um commit marcando os critérios. O changelog só muda se
+   a seção de versões da visão geral disser que esta spec sai sozinha.
 7. **PR**, se houver. Base certa (empilhado sobre a dependência aberta, ou
    `git.base`; nunca a produção, a menos que `git.base` seja a própria produção),
    link para a spec, critérios com evidência e a linha `Jira: <CHAVE>` quando a
