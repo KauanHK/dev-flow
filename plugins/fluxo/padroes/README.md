@@ -22,6 +22,11 @@ paths:                            # os arquivos que esta camada cobre
 ---
 ```
 
+Regra marcada *(recomendação)* é o desenho que o perfil quer, mas que o projeto de
+origem ainda não segue em todo lugar. Vale o de sempre: onde o código vizinho
+segue outro jeito sem regra do projeto que o registre, o subagente segue o vizinho
+e cita a diferença, e o revisor a trata como `nota`.
+
 ## Precedência
 
 Do mais geral para o mais específico; onde dois divergem, vale o de baixo.
@@ -40,5 +45,9 @@ Do mais geral para o mais específico; onde dois divergem, vale o de baixo.
   a detecção dele na skill `iniciar`.
 - Camada nova: um arquivo no perfil. O `implementar` e o `revisar` descobrem as
   camadas pelos arquivos da pasta, sem lista fixa.
+- A `arquitetura` do perfil tem uma seção "Composição": onde ficam as peças que
+  conhecem os adapters concretos e os ligam, e quem pode importá-las. Os `paths:`
+  dela cobrem esses arquivos, para que a etapa que liga uma peça nova leia a
+  regra.
 - Escreva só o que é do perfil, e não de um projeto: regra de negócio, nome de
   módulo e histórico ficam no `CLAUDE.md` ou em `.claude/rules/` do projeto.
