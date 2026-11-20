@@ -28,7 +28,7 @@ uv run pytest tests/unit/modules/<dominio>/test_x.py::test_y
 
 ## Onde
 
-A árvore de `tests/` espelha a de `app/`:
+A árvore de `tests/` espelha a de `src/`:
 
 - `tests/unit/...`: domínio, use cases, integrações e core. Sem banco e sem rede.
 - `tests/integration/modules/<dominio>/`: a rota de ponta a ponta, por HTTP, no
@@ -56,9 +56,20 @@ A árvore de `tests/` espelha a de `app/`:
 - Sem `TEST_DATABASE_URL` disponível, diga que os testes de integração não
   rodaram. Nunca os dê como passando.
 
+## Trocar dependências
+
+Troque a dependência no ponto em que a composição a liga:
+
+- No unitário, pelo construtor do use case.
+- Na integração, por `app.dependency_overrides` na função do `Depends`
+  (`make_unit_of_work`, a dependência do client externo), limpo no fim da
+  fixture.
+- `patch` no módulo que importa uma fábrica só para o que o use case ainda monta
+  sozinho. Precisar dele é sinal de composição fora do lugar: cite no relato.
+
 ## Tipagem
 
-Os testes seguem o mesmo mypy `strict` que `app/`: teste e fixture anotados,
+Os testes seguem o mesmo mypy `strict` que `src/`: teste e fixture anotados,
 inclusive o `-> None`, e o parâmetro de fixture com o tipo que ela devolve. Dublê
 que não implementa o contrato inteiro de propósito entra por `cast`, com
 comentário, nunca por `type: ignore` genérico.

@@ -4,8 +4,11 @@ descricao: Routers FastAPI, schemas Pydantic, injeção de dependências, autent
 paths:
   - "**/adapters/http/**"
   - "**/app/api/**"
+  - "**/src/api/**/*.py"
   - "**/app/core/handlers.py"
+  - "**/src/core/handlers.py"
   - "**/app/core/security/**"
+  - "**/src/core/security/**/*.py"
 ---
 
 # API REST
@@ -13,7 +16,7 @@ paths:
 ## Router
 
 - Um router por módulo em `adapters/http/router.py`, registrado em
-  `app/api/router.py` com prefixo e tags.
+  `src/api/router.py` com prefixo e tags.
 - **Router fino:** schema → `*Command` → use case com o `uow` → entidade → `*Read`.
   Regra de negócio não mora no router.
 - Autenticado por padrão: `APIRouter(dependencies=[Depends(get_current_actor)])`.
@@ -36,6 +39,13 @@ paths:
 
 - Aliases `Annotated` em `adapters/http/dependencies.py`
   (`ClientesUnitOfWorkDep`, `ActorDep`), usados nas assinaturas das rotas.
+- A rota é a composição da request (veja "Composição" na `arquitetura`): recebe as
+  peças por `Depends` e instancia o use case com elas. O que o teste precisa
+  trocar (UoW, client de serviço externo) entra por `Depends`, e não por import
+  direto na rota.
+- Client com ciclo de vida (`httpx.AsyncClient`) nasce no `lifespan`, fica em
+  `app.state` e chega à rota por uma dependência que o lê do `request`.
+  *(recomendação)* O `lifespan` o fecha no encerramento, como faz com o banco.
 
 ## Erros
 

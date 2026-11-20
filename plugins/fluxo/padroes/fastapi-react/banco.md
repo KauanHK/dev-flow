@@ -4,6 +4,7 @@ descricao: Models SQLAlchemy, repositórios, Unit of Work e migrações Alembic.
 paths:
   - "**/adapters/db/**"
   - "**/app/core/db/**"
+  - "**/src/core/db/**/*.py"
   - "**/migrations/**"
   - "**/alembic.ini"
 ---
