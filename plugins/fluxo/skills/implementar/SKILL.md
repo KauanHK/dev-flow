@@ -119,10 +119,26 @@ que fica de pé sozinho, com testes passando, e lista:
 
 - o que entrega;
 - os arquivos que toca;
-- os critérios de aceite que atende.
+- os critérios de aceite que atende;
+- os padrões que valem para ela (abaixo).
 
 Spec pequena é uma etapa só; não divida por dividir. Todo critério de aceite precisa
 estar em alguma etapa. Mostre as etapas ao usuário e siga, sem esperar aprovação.
+
+**Padrões da etapa.** O subagente lê só os padrões das camadas que a etapa toca,
+para não carregar o que não usa. Monte a lista de arquivos assim:
+
+1. Perfil: `padroes` do `fluxo.yml`. Sem a chave, ou `nenhum`, não há camadas do
+   plugin; sem a chave, avise uma vez que `/fluxo:iniciar` a acrescenta. As
+   camadas são os arquivos de `${CLAUDE_PLUGIN_ROOT}/padroes/<perfil>/`.
+2. Camadas da etapa: as que têm um padrão em `paths:` (no frontmatter) que cobre
+   algum arquivo da etapa. Etapa que escreve teste inclui `testes`.
+3. Para cada camada: o arquivo do plugin e, se existir, `.claude/rules/<camada>.md`
+   do projeto. Se a regra do projeto tiver `substitui: true`, fica só ela.
+4. As outras regras de `.claude/rules/` cujos `paths:` cobrem algum arquivo da
+   etapa (as que não têm `paths:` valem para todas).
+
+Use caminhos absolutos. Mostre as camadas de cada etapa junto com as etapas.
 
 **Spec errada volta para a spec.** Se o código contradiz o que a spec afirma (o
 arquivo não existe, a função faz outra coisa, o desenho não fecha), pare. Descreva
@@ -150,6 +166,7 @@ e `effort` do `Agent`. Sem a chave, não passe esses parâmetros.
 
 - o caminho da spec e da visão geral, e os das specs do `depende_de`;
 - a etapa: o que entrega, arquivos e critérios;
+- os padrões da etapa (passo 6), dizendo quais são do plugin e quais do projeto;
 - o que as etapas anteriores já fizeram;
 - a branch em que ele está;
 - o comando para testar a etapa, se a verificação do projeto indicar um;
@@ -178,8 +195,9 @@ Marque `[x]` na spec só os critérios verificados. Commit:
 ## 9. Revisar e corrigir
 
 **Revisar.** Chame um subagente `fluxo:revisor` com a ferramenta `Agent` e este
-prompt: `Leia ${CLAUDE_PLUGIN_ROOT}/skills/revisar/SKILL.md e siga. Entrada: <branch>
---base <base>`. Ele não viu a implementação, só lê e devolve um relatório com
+prompt: `Leia ${CLAUDE_PLUGIN_ROOT}/skills/revisar/SKILL.md e siga. Os padrões do
+plugin estão em ${CLAUDE_PLUGIN_ROOT}/padroes. Entrada: <branch> --base <base>`. Ele
+monta sozinho os padrões a partir do diff. Ele não viu a implementação, só lê e devolve um relatório com
 veredito. Não passe a ele o que os outros subagentes relataram.
 
 **Decidir.** Leia o relatório e confira os achados no código:
@@ -190,8 +208,10 @@ veredito. Não passe a ele o que os outros subagentes relataram.
   relatório.
 - Sem nada para corrigir: siga para a entrega.
 
-**Corrigir.** Chame um subagente `fluxo:corretor` com o caminho da spec, a branch e
-os achados escolhidos, com `arquivo:linha` e o que fazer. Depois, verifique de novo
+**Corrigir.** Chame um subagente `fluxo:corretor` com o caminho da spec, a branch,
+os achados escolhidos, com `arquivo:linha` e o que fazer, e os padrões das camadas
+dos arquivos dos achados, montados como no passo 6. A falha da verificação no
+passo 8 leva os padrões dos arquivos que falharam. Depois, verifique de novo
 como no passo 8, ajuste as marcações de critério que mudaram e volte a "Revisar".
 
 **Limite: 2 ciclos de correção.** Se depois da segunda correção a revisão ainda
@@ -253,4 +273,6 @@ Quando todas as specs terminarem, diga ao usuário:
   `/fluxo:implementar` na spec faz isso);
 - as specs aguardando ou de fora, e o que cada uma espera;
 - as pendências e as notas da revisão;
+- onde o projeto segue outro jeito que o padrão do plugin sem regra que o
+  registre, com a regra de `.claude/rules/` que você sugere;
 - o que precisa mudar nas specs, se houver.

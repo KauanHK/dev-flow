@@ -1,6 +1,6 @@
 ---
 name: revisar
-description: Revisa a implementação de uma spec contra a própria spec, num agente separado que só lê — critérios de aceite com evidência, desenho, escopo, regras do grupo, commits e corpo do PR — e devolve um relatório com veredito. Use antes da revisão humana de um PR do fluxo, ou quando o usuário pedir para revisar um PR ou uma branch contra a spec.
+description: Revisa a implementação de uma spec contra a própria spec, num agente separado que só lê — critérios de aceite com evidência, desenho, escopo, regras do grupo, padrões de código, commits e corpo do PR — e devolve um relatório com veredito. Use antes da revisão humana de um PR do fluxo, ou quando o usuário pedir para revisar um PR ou uma branch contra a spec.
 argument-hint: "[número do PR | branch | spec | chave do Jira] [--base <branch>] [--comentar]"
 context: fork
 agent: fluxo:revisor
@@ -59,6 +59,21 @@ localmente.
 - A spec: Desenho, Fora de escopo e Critérios de aceite.
 - As specs do `depende_de`, só o que elas entregam e esta usa.
 - O `CLAUDE.md` do projeto, pelas convenções.
+- Os padrões das camadas que o diff toca, montados como no passo 6 do
+  `implementar`, com os arquivos do diff no lugar dos da etapa:
+  1. O perfil é `padroes` do `fluxo.yml`; sem a chave, ou `nenhum`, não há
+     camadas do plugin. As camadas do perfil são os arquivos de
+     `<padrões do plugin>/<perfil>/`. A pasta `<padrões do plugin>` é
+     `${CLAUDE_PLUGIN_ROOT}/padroes`; se a variável aparecer sem valor, use a
+     pasta indicada no prompt, ou `../../padroes` a partir da pasta deste
+     `SKILL.md`.
+  2. Uma camada entra quando algum padrão do `paths:` do frontmatter dela cobre
+     um arquivo do diff.
+  3. Para cada camada, o arquivo do plugin e `.claude/rules/<camada>.md` do
+     projeto, se existir; com `substitui: true` nela, só ela. Onde divergem, vale
+     a do projeto.
+  4. As outras regras de `.claude/rules/` cujos `paths:` cobrem arquivos do diff,
+     e as sem `paths:`.
 
 ## 3. Conferir
 
@@ -73,8 +88,11 @@ Leia o diff inteiro e, quando precisar de contexto, o arquivo em volta. Confira:
    se o código deve voltar ao Desenho ou se a spec deve ser atualizada.
 3. **Escopo.** Algo no diff que a spec não pede ou que está em "Fora de escopo":
    refactor de passagem, arquivo sem relação, mudança de formatação em massa.
-4. **Regras do grupo e do projeto.** As regras da visão geral, as decisões citadas
-   e o `CLAUDE.md`.
+4. **Regras do grupo e do projeto.** As regras da visão geral, as decisões citadas,
+   o `CLAUDE.md` e os padrões das camadas. Ao apontar um padrão quebrado, cite o
+   arquivo do padrão. Código que segue o jeito do resto do projeto e não o padrão
+   do plugin não é `bloqueia`: é `nota`, sugerindo uma regra em `.claude/rules/`
+   que registre o jeito do projeto.
 5. **Defeitos evidentes.** Só os que você consegue mostrar no diff: condição
    invertida, erro não tratado num caminho que o critério cobre, rota sem a
    autorização que as vizinhas têm. Não é uma caça a bugs; para isso existe o

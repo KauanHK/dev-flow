@@ -1,6 +1,6 @@
 ---
 name: iniciar
-description: Configura o plugin fluxo num repositório. Descobre a branch base, a pasta de specs, o roteiro de verificação e o projeto do Jira, e grava `.claude/fluxo.yml`. Use quando o usuário pedir para iniciar, configurar ou preparar o fluxo num projeto, ou quando outra skill do fluxo não encontrar `.claude/fluxo.yml`.
+description: Configura o plugin fluxo num repositório. Descobre a branch base, a pasta de specs, o roteiro de verificação, o perfil de padrões de código e o projeto do Jira, e grava `.claude/fluxo.yml`. Use quando o usuário pedir para iniciar, configurar ou preparar o fluxo num projeto, ou quando outra skill do fluxo não encontrar `.claude/fluxo.yml`.
 ---
 
 # Iniciar o fluxo num repositório
@@ -10,7 +10,8 @@ na raiz do repositório. Esta skill escreve esse arquivo a partir do modelo
 `fluxo.yml` desta pasta. Os comentários do modelo explicam cada chave.
 
 Se `.claude/fluxo.yml` já existir, mostre o conteúdo e pergunte o que mudar em vez
-de reescrever.
+de reescrever. Chave do modelo que falta no arquivo (como `padroes`, de uma versão
+mais nova do plugin): descubra o valor como abaixo e proponha acrescentá-la.
 
 ## 1. Repositório
 
@@ -27,6 +28,17 @@ de reescrever.
   Confirme a lista com o usuário.
 - **Changelog:** `CHANGELOG.md` na raiz, se existir e o `CLAUDE.md` descrever a
   regra de versão. Senão, deixe vazio.
+- **Padrões:** os perfis são as pastas de `${CLAUDE_PLUGIN_ROOT}/padroes/`, e o
+  `README.md` de lá diz a stack de cada um. Escolha pelo que os manifestos
+  mostram: `fastapi-react` com FastAPI no `pyproject.toml` e React no
+  `package.json` (um projeto só com o backend também serve, sem a camada
+  `frontend`). Nenhum perfil serve: `nenhum`, e avise que o fluxo segue só o
+  `CLAUDE.md` e as regras do projeto. Confirme o perfil com o usuário. Depois,
+  liste as regras que o projeto já tem em `.claude/rules/` e, para cada camada do
+  perfil, se os `paths:` dela acham arquivos no projeto (`git ls-files` com o
+  padrão). Camada sem arquivo correspondente com estrutura parecida em outro
+  lugar: sugira uma regra do projeto com os `paths:` certos. Não crie regras sem o
+  usuário pedir.
 - **Agentes:** não pergunte. Mantenha a seção `agentes` comentada, com os padrões do
   modelo, a menos que o usuário peça outro modelo ou esforço.
 

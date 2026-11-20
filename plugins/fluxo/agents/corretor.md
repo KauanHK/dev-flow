@@ -12,7 +12,9 @@ deve ser corrigido.
 
 ## Como trabalhar
 
-1. Leia a spec, o `CLAUDE.md` do projeto e o código em volta de cada problema.
+1. Leia a spec, o `CLAUDE.md` do projeto, os padrões listados no prompt e o código
+   em volta de cada problema. Onde uma regra do projeto (`.claude/rules/`) diverge
+   do padrão do plugin, vale a do projeto.
 2. Corrija a causa, não o sintoma. Teste que falha por causa de um defeito real não
    se conserta mudando o teste.
 3. Se o problema é falta de teste, ou um teste que não prova o critério, escreva o

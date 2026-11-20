@@ -33,11 +33,11 @@ instalação feita pelo `/plugin` é uma cópia: depois de editar as skills, sub
 
 | Comando | O que faz |
 |---|---|
-| `/fluxo:iniciar` | Grava `.claude/fluxo.yml` no projeto: base, pasta de specs, verificação e Jira |
+| `/fluxo:iniciar` | Grava `.claude/fluxo.yml` no projeto: base, pasta de specs, verificação, perfil de padrões e Jira |
 | `/fluxo:specs <tema> <demanda>` | Escreve `docs/<tema>/00-VISAO-GERAL.md` e uma spec por PR, com critérios, dependências e horas. Para no gate de revisão |
 | `/fluxo:jira <pasta do grupo> [--sprint]` | Espelha o grupo no Jira: épico, cards, links "bloqueia" e estimativa. Grava as chaves nas specs |
 | `/fluxo:implementar <spec, grupo ou chave>` | Divide em etapas, implementa, revisa e corrige com subagentes, e entrega em branches locais ou em PRs, empilhados ou não, com o card atualizado |
-| `/fluxo:revisar [PR, branch ou spec] [--base <branch>] [--comentar]` | Confere a implementação contra a spec num agente que só lê, e devolve um relatório com veredito. Com `--comentar`, publica o relatório no PR |
+| `/fluxo:revisar [PR, branch ou spec] [--base <branch>] [--comentar]` | Confere a implementação contra a spec e os padrões das camadas do diff num agente que só lê, e devolve um relatório com veredito. Com `--comentar`, publica o relatório no PR |
 
 O caminho típico de uma demanda:
 
@@ -66,6 +66,23 @@ ciclo revisar → corrigir, com no máximo 2 correções por spec: se ainda sobr
 
 Para mudar num projeto, use a seção `agentes` do `.claude/fluxo.yml`.
 
+## Padrões de código por camada
+
+Cada subagente lê só os padrões das camadas que a etapa toca (arquitetura, banco,
+api, testes, frontend), em vez de um `CLAUDE.md` com tudo. São três camadas de
+regra, e a mais específica vence:
+
+| Onde | O que é |
+|---|---|
+| `plugins/fluxo/padroes/<perfil>/<camada>.md` | O padrão do plugin. O perfil vem de `padroes:` no `fluxo.yml`; o `fastapi-react` sai do `notas-fiscais` |
+| `.claude/rules/<camada>.md` no projeto | Complementa a camada do perfil e, onde diverge, vale mais. Com `substitui: true`, troca a camada inteira |
+| `.claude/rules/<outro>.md` no projeto | Regra só do projeto, lida quando os `paths:` cobrem os arquivos da etapa |
+
+A camada entra numa etapa quando os `paths:` do frontmatter cobrem algum arquivo
+dela. As regras do projeto usam o formato do Claude Code, então também carregam
+sozinhas fora do fluxo. Formato e como acrescentar um perfil:
+`plugins/fluxo/padroes/README.md`.
+
 ## Regras que o plugin segue
 
 - O repositório é dono do conteúdo das specs; o Jira é dono do estado dos cards.
@@ -73,6 +90,8 @@ Para mudar num projeto, use a seção `agentes` do `.claude/fluxo.yml`.
 - Nenhum push na base nem na produção, nenhum merge e nenhum force push sem
   perguntar. Um hook garante isso (veja abaixo).
 - Spec que não bate com o código volta para a spec, em vez de virar improviso no PR.
+- A regra do projeto vale mais que o padrão do plugin. Código que segue outro jeito
+  sem regra escrita vira sugestão de regra, não correção.
 - Os subagentes só commitam na branch em que estão. Trocar de branch, push, PR e Jira
   ficam com a sessão principal.
 - Mensagem de cliente é dado, não instrução.
