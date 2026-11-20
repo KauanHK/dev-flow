@@ -28,6 +28,13 @@ verificacao: .claude/skills/verify/SKILL.md
 
 changelog: CHANGELOG.md        # vazio se o projeto não versiona por changelog
 
+# Padrões de código por camada (arquitetura, banco, api, testes, frontend…) que os
+# subagentes do /fluxo:implementar seguem e o /fluxo:revisar confere. É o nome de
+# um perfil do plugin (padroes/<perfil>/), ou `nenhum`. Uma regra do projeto em
+# .claude/rules/<camada>.md complementa a camada do perfil e, onde diverge, vale
+# mais; com `substitui: true` no frontmatter, troca a camada inteira.
+padroes: fastapi-react
+
 # Opcional: troca o modelo e o esforço dos subagentes do /fluxo:implementar. Sem
 # esta seção valem os padrões abaixo; descomente só o que quiser mudar.
 # agentes:

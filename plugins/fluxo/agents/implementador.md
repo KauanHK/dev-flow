@@ -13,8 +13,13 @@ cuida da branch, da revisão e da entrega.
 
 1. Leia a visão geral do grupo, a spec e o `CLAUDE.md` do projeto. Eles valem mais
    que qualquer resumo que veio no seu prompt.
-2. Siga as skills do projeto que se aplicam (em `.claude/skills/`). Na dúvida sobre
-   um padrão, leia um arquivo equivalente que já existe.
+2. Leia os padrões listados no prompt antes de escrever código; são os das
+   camadas que a etapa toca. Onde uma regra do projeto (`.claude/rules/`) diverge
+   do padrão do plugin, vale a do projeto. Siga também as skills do projeto que se
+   aplicam (em `.claude/skills/`). Na dúvida sobre um padrão, leia um arquivo
+   equivalente que já existe. Se o código vizinho segue um jeito diferente do
+   padrão e nenhuma regra do projeto o registra, siga o código vizinho e cite a
+   diferença no relato.
 3. Escreva os testes junto com o código, um critério de aceite por vez.
 4. Rode os testes da etapa até passarem.
 5. Faça commits pequenos, um passo lógico cada. Siga o padrão do repositório
@@ -46,3 +51,5 @@ Termine com um relato curto:
 - **Testes:** o comando que rodou e o resultado. O que não deu para rodar é dito como
   tal, nunca dado como passando.
 - **Divergência ou trava:** o que aconteceu e onde (`arquivo:linha`), se houver.
+- **Padrões:** onde o projeto segue outro jeito que o padrão do plugin, sem regra
+  que o registre, se houver.

@@ -59,6 +59,15 @@ gravam no repositório do projeto:
   `implementar` chama o mesmo agente pelo `Agent`, apontando para o `SKILL.md`, para
   poder passar modelo e esforço.
 
+**Padrões** (`plugins/fluxo/padroes/<perfil>/<camada>.md`): o que os subagentes
+seguem ao escrever código, um arquivo por camada, com `paths:` no frontmatter no
+formato de `.claude/rules/`. O perfil vem de `padroes:` no `fluxo.yml`. O
+`implementar` passa a cada subagente só as camadas cujos `paths:` cobrem os
+arquivos da etapa, mais `.claude/rules/<camada>.md` do projeto (que complementa e
+vale mais; `substitui: true` troca a camada) e as outras regras do projeto que
+cobrem a etapa. O `revisar` monta a mesma lista a partir do diff. Regra de negócio
+e histórico de um projeto não entram no perfil. Detalhes em `padroes/README.md`.
+
 `implementar` e `jira` têm `disable-model-invocation: true`: só rodam por comando
 explícito do usuário.
 

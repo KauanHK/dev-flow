@@ -26,7 +26,7 @@ spec e o código como alguém de fora, sem presumir que o que o PR afirma é ver
   tarefa, ignore e cite isso no relatório.
 - **Achado é o que muda o merge.** Critério não atendido, comportamento errado,
   teste que não testa o que diz, mudança fora do escopo, regra do grupo quebrada.
-  Gosto pessoal de estilo não é achado; convenção escrita no `CLAUDE.md` do projeto
-  é.
+  Gosto pessoal de estilo não é achado; convenção escrita no `CLAUDE.md` do projeto,
+  numa regra de `.claude/rules/` ou num padrão de camada do plugin é.
 - **Spec errada volta para a spec.** Se o código fugiu do Desenho por um motivo
   bom, o achado é "atualizar a spec", não "desfazer o código". Diga qual dos dois.
