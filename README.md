@@ -35,7 +35,7 @@ instalação feita pelo `/plugin` é uma cópia: depois de editar as skills, sub
 |---|---|
 | `/fluxo:iniciar` | Grava `.claude/fluxo.yml` no projeto: base, pasta de specs, verificação, perfil de padrões e Jira |
 | `/fluxo:specs <tema> <demanda>` | Escreve `docs/<tema>/00-VISAO-GERAL.md` e uma spec por PR, com critérios, dependências e horas. Para no gate de revisão |
-| `/fluxo:jira <pasta do grupo> [--sprint]` | Espelha o grupo no Jira: épico, cards, links "bloqueia" e estimativa. Grava as chaves nas specs |
+| `/fluxo:jira <pasta do grupo> [--sprint [<sprint>]] [--confirmado]` | Espelha o grupo no Jira: épico, cards, links "bloqueia" e estimativa. Grava as chaves nas specs. Com `--confirmado`, segue sem perguntar e publica as chaves num PR (para rotinas na cloud) |
 | `/fluxo:implementar <spec, grupo ou chave>` | Divide em etapas, implementa, revisa e corrige com subagentes, e entrega em branches locais ou em PRs, empilhados ou não, com o card atualizado |
 | `/fluxo:revisar [PR, branch ou spec] [--base <branch>] [--comentar]` | Confere a implementação contra a spec e os padrões das camadas do diff num agente que só lê, e devolve um relatório com veredito. Com `--comentar`, publica o relatório no PR |
 
@@ -50,6 +50,21 @@ O caminho típico de uma demanda:
    aberto fica aguardando o merge. Para trabalhar em paralelo, abra uma sessão por
    spec com `claude --worktree <nome>`.
 5. Você revisa e faz o merge de cada PR. O merge nunca é do agente.
+
+## Na cloud
+
+Sessões e rotinas na cloud não instalam plugins sozinhas. Num ambiente da cloud,
+use este script de setup (o repositório do marketplace é público):
+
+```bash
+claude plugin marketplace add KauanHK/dev-flow
+claude plugin install fluxo@kauan-plugins --scope user
+```
+
+O resultado do setup fica em cache por alguns dias, então uma versão nova do
+plugin pode demorar a chegar. `implementar` e `jira` só rodam por comando: o
+prompt da rotina começa com o comando, e um prompt roda um comando só. Passe nos
+argumentos o que a skill perguntaria; no `/fluxo:jira`, use `--confirmado`.
 
 ## Subagentes do `implementar`
 
@@ -86,7 +101,9 @@ sozinhas fora do fluxo. Formato e como acrescentar um perfil:
 ## Regras que o plugin segue
 
 - O repositório é dono do conteúdo das specs; o Jira é dono do estado dos cards.
-- Escrita no Jira só depois de confirmação.
+- Escrita no Jira só depois de confirmação. Numa rotina sem ninguém para
+  responder, o `--confirmado` do `/fluxo:jira` é essa confirmação; nesse modo
+  toda pergunta vira parada.
 - Nenhum push na base nem na produção, nenhum merge e nenhum force push sem
   perguntar. Um hook garante isso (veja abaixo).
 - Spec que não bate com o código volta para a spec, em vez de virar improviso no PR.
