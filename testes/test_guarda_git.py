@@ -84,6 +84,15 @@ class GuardaGit(unittest.TestCase):
     def assertPassa(self, comando, cwd=None):
         self.assertIsNone(rodar_hook(comando, cwd or self.repo), f"devia passar: {comando}")
 
+    def escrever_config(self, texto):
+        with open(os.path.join(self.repo, ".claude", "fluxo.yml"), "w") as arquivo:
+            arquivo.write(texto)
+
+    def usar_config(self, texto):
+        """Troca o fluxo.yml do repositório até o fim do teste."""
+        self.escrever_config(texto)
+        self.addCleanup(self.escrever_config, FLUXO_YML)
+
     def test_push_da_branch_da_spec_passa(self):
         self.assertPassa("git push -u origin feat/conta-01-x")
         self.assertPassa("git push")
@@ -107,6 +116,98 @@ class GuardaGit(unittest.TestCase):
         self.assertPergunta("git push origin :dev", "apaga")
         self.assertPergunta("git push origin --delete main", "apaga")
         self.assertPassa("git push origin --delete feat/conta-01-x")
+
+    def test_worktree_do_lote_usa_a_config_do_checkout_principal(self):
+        # O /fluxo:lote cria as worktrees em .claude/worktrees/<id>; o fluxo.yml
+        # deste repositório não é versionado, então só existe no checkout principal.
+        worktree = os.path.join(self.repo, ".claude", "worktrees", "conta-02")
+        sh(self.repo, "git", "worktree", "add", "-q", "-b", "feat/conta-02-y", worktree, "dev")
+        self.addCleanup(sh, self.repo, "git", "branch", "-q", "-D", "feat/conta-02-y")
+        self.addCleanup(sh, self.repo, "git", "worktree", "remove", "--force", worktree)
+        self.assertFalse(os.path.exists(os.path.join(worktree, ".claude", "fluxo.yml")))
+        self.assertPassa("git push -u origin feat/conta-02-y", cwd=worktree)
+        self.assertPergunta("git push origin dev", "`dev`", cwd=worktree)
+        self.assertPergunta("cd .claude/worktrees/conta-02 && git push origin HEAD:main", "`main`")
+        self.assertPergunta("git -C .claude/worktrees/conta-02 push origin dev", "`dev`")
+        self.assertPassa("cd .claude/worktrees/conta-02 && git push")
+
+    def test_push_para_protegida_em_lista_inline_pergunta(self):
+        self.usar_config(
+            "git:\n"
+            "  base: dev\n"
+            "  producao: main\n"
+            "  protegidas: ['staging', \"hml\"]   # entre a dev e a main\n"
+        )
+        self.assertPergunta(
+            "git push origin staging", "envia direto para a branch protegida `staging`"
+        )
+        self.assertPergunta("git push origin HEAD:hml", "`hml`")
+        self.assertPergunta("git push origin dev", "`dev`")
+        self.assertPergunta("git push origin main", "`main`")
+        self.assertPassa("git push origin feat/conta-01-x")
+        self.assertPassa("git push origin staging-velha")
+
+    def test_push_para_protegida_em_lista_de_bloco_pergunta(self):
+        self.usar_config(
+            "git:\n"
+            "  base: dev\n"
+            "  protegidas:            # além da base e da produção\n"
+            "    - staging\n"
+            "\n"
+            "    - 'release/*'        # uma por versão\n"
+            "  producao: main\n"
+            "specs:\n"
+            "  - fora\n"
+        )
+        self.assertPergunta("git push origin staging", "`staging`")
+        self.assertPergunta("git push origin feat/conta-01-x:release/1.2", "`release/1.2`")
+        self.assertPergunta("git push origin main", "`main`")
+        self.assertPassa("git push origin fora")
+        self.assertPassa("git push origin feat/conta-01-x")
+
+    def test_lista_de_bloco_no_mesmo_recuo_da_chave(self):
+        self.usar_config("git:\n  base: dev\n  protegidas:\n  - staging\n  producao: main\n")
+        self.assertPergunta("git push origin staging", "`staging`")
+        self.assertPergunta("git push origin main", "`main`")
+
+    def test_padrao_glob_casa_so_o_que_deve(self):
+        self.usar_config("git:\n  base: dev\n  producao: main\n  protegidas: [release/*, hml?]")
+        self.assertPergunta("git push origin release/1.2", "`release/1.2`")
+        self.assertPergunta("git push origin HEAD:refs/heads/release/2.0", "`release/2.0`")
+        self.assertPergunta("git push origin hml2", "`hml2`")
+        self.assertPassa("git push origin releases")
+        self.assertPassa("git push origin release")
+        self.assertPassa("git push origin feat/release/1.2")
+        self.assertPassa("git push origin hml")
+
+    def test_apagar_protegida_pergunta(self):
+        self.usar_config("git:\n  base: dev\n  producao: main\n  protegidas: [staging, release/*]")
+        self.assertPergunta("git push origin :staging", "apaga a branch protegida `staging`")
+        self.assertPergunta("git push origin --delete staging", "apaga")
+        self.assertPergunta(
+            "git push -d origin release/1.2", "apaga a branch protegida `release/1.2`"
+        )
+        self.assertPassa("git push origin --delete feat/conta-01-x")
+
+    def test_protegidas_vazia_nao_muda_nada(self):
+        for vazia in ("  protegidas: []\n", "  protegidas:\n", "  protegidas:   # nenhuma\n"):
+            with self.subTest(vazia=vazia):
+                self.usar_config(
+                    "git:\n  base: dev\n  producao: main\n" + vazia + "specs:\n  dir: docs\n"
+                )
+                self.assertPergunta("git push origin dev", "`dev`")
+                self.assertPergunta("git push origin main", "`main`")
+                self.assertPassa("git push origin master")
+                self.assertPassa("git push origin staging")
+                self.assertPassa("git push origin feat/conta-01-x")
+
+    def test_protegida_com_valor_unico(self):
+        self.usar_config("git:\n  protegidas: 'staging'   # só uma\n")
+        self.assertPergunta("git push origin staging", "`staging`")
+        # sem base nem produção, `main` e `master` continuam protegidas
+        self.assertPergunta("git push origin main", "`main`")
+        self.assertPergunta("git push origin master", "`master`")
+        self.assertPassa("git push origin feat/conta-01-x")
 
     def test_force_push_pergunta(self):
         self.assertPergunta("git push --force-with-lease", "force push")

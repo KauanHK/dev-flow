@@ -1,6 +1,6 @@
 ---
 name: iniciar
-description: Configura o plugin fluxo num repositório. Descobre a branch base, a pasta de specs, o roteiro de verificação, o perfil de padrões de código e o projeto do Jira, e grava `.claude/fluxo.yml`. Use quando o usuário pedir para iniciar, configurar ou preparar o fluxo num projeto, ou quando outra skill do fluxo não encontrar `.claude/fluxo.yml`.
+description: Configura o plugin fluxo num repositório. Descobre a branch base, as branches protegidas, a pasta de specs, o roteiro de verificação, o perfil de padrões de código e o projeto do Jira, e grava `.claude/fluxo.yml`. Use quando o usuário pedir para iniciar, configurar ou preparar o fluxo num projeto, ou quando outra skill do fluxo não encontrar `.claude/fluxo.yml`.
 ---
 
 # Iniciar o fluxo num repositório
@@ -10,8 +10,9 @@ na raiz do repositório. Esta skill escreve esse arquivo a partir do modelo
 `fluxo.yml` desta pasta. Os comentários do modelo explicam cada chave.
 
 Se `.claude/fluxo.yml` já existir, mostre o conteúdo e pergunte o que mudar em vez
-de reescrever. Chave do modelo que falta no arquivo (como `padroes`, de uma versão
-mais nova do plugin): descubra o valor como abaixo e proponha acrescentá-la.
+de reescrever. Chave do modelo que falta no arquivo (como `padroes` ou
+`git.protegidas`, de uma versão mais nova do plugin): descubra o valor como abaixo
+e proponha acrescentá-la.
 
 ## 1. Repositório
 
@@ -19,7 +20,18 @@ mais nova do plugin): descubra o valor como abaixo e proponha acrescentá-la.
   precisa estar ok. Sem isso o `/fluxo:implementar` não abre PR: avise e siga.
 - **Base:** se existir `dev` (local ou em `origin`), `git.base = dev` e
   `git.producao = main`. Senão, as duas são a branch padrão
-  (`gh repo view --json defaultBranchRef`).
+  (`gh repo view --json defaultBranchRef`). Confira para onde os últimos PRs com
+  merge foram (`gh pr list --state merged --limit 30 --json baseRefName`): se a
+  maioria vai para outra branch (uma `staging` que sobe para a `main`), é ela a
+  `git.base`; pergunte.
+- **Protegidas:** as branches protegidas no GitHub
+  (`gh api repos/{owner}/{repo}/branches --paginate -q '.[] | select(.protected) | .name'`)
+  e as de `origin` com nome de longa duração (`staging`, `homolog*`, `hml`,
+  `release/*`), menos a base e a produção. Proponha o resto em `git.protegidas` e
+  confirme com o usuário; sem nenhuma, `[]`. O hook pede confirmação antes de push
+  direto nelas, e o `/fluxo:entregar` não as trata como pai de pilha.
+- **Limite de PRs:** não pergunte. Use o `limite_prs` do modelo e diga ao usuário
+  que ele limita os PRs de spec abertos ao mesmo tempo e que vazio tira o limite.
 - **Specs:** procure `*/00-VISAO-GERAL.md` abaixo de `docs/`. A pasta que contém os
   grupos é `specs.dir`. Sem nenhum, use `docs`.
 - **Verificação:** se existir `.claude/skills/verify/SKILL.md`, use o caminho dele.

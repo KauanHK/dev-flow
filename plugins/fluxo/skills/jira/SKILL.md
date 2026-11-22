@@ -14,9 +14,16 @@ critérios, dependências e estimativa. O Jira é dono do estado: status, sprint
 responsável e horas lançadas. Esta skill escreve só conteúdo e nunca muda o status
 de um card.
 
-Só specs com `status: aprovada` no frontmatter vão para o Jira. As que estão em
-`rascunho` são puladas e listadas no relatório. Esta skill nunca muda o `status` de
-uma spec.
+Só specs com `status: aprovada` no frontmatter vão para o Jira. As outras são
+puladas e listadas no relatório:
+
+- `rascunho`: esperam aprovação. Com card, voltaram para rascunho numa change
+  request do `/fluxo:specs`, e o card só é atualizado depois da nova aprovação.
+- `cancelada`: saíram do escopo numa change request. Com card, o card fica como
+  está, porque o Jira é dono do estado, e o relatório pede ao usuário que o feche
+  ou descarte. Sem card, só são puladas.
+
+Esta skill nunca muda o `status` de uma spec.
 
 **Modo confirmado (`--confirmado`).** Serve para rodar sem ninguém responder, como
 numa rotina agendada na cloud: o `--confirmado` no comando é a confirmação do plano
@@ -56,11 +63,12 @@ Use o Atlassian MCP. As operações citadas aqui são `createJiraIssue`,
   `https://github.com/<owner>/<repo>/blob/<git.base>/<caminho>`. Ele só abre depois
   de as specs chegarem à base, e isso é esperado.
 
-Pare e liste os problemas, sem escrever nada, se: um `depende_de` citar um `id` que
-não existe, houver ciclo, ou faltar `estimativa_h` ou critério de aceite numa spec
-aprovada. Uma spec aprovada que depende de outra em rascunho ou sem card é
-sincronizada, mas o link dessa dependência fica para a próxima rodada; diga isso no
-relatório.
+Pare e liste os problemas, sem escrever nada, se: um `depende_de` de spec não
+cancelada citar um `id` que não existe ou uma spec cancelada, houver ciclo, ou
+faltar `estimativa_h` ou critério de aceite numa spec aprovada. Dependência numa
+cancelada se resolve com uma change request no `/fluxo:specs`. Uma spec aprovada que
+depende de outra em rascunho ou sem card é sincronizada, mas o link dessa
+dependência fica para a próxima rodada; diga isso no relatório.
 
 ## 2. Plano e confirmação
 
@@ -79,8 +87,8 @@ siga sem perguntar; ela entra também no relatório.
 - Sem chave: `createJiraIssue` do tipo `jira.tipo_epico`. Resumo:
   `<jira.cliente> - <título da visão geral sem "— visão geral e índice">`.
   Descrição: o Contexto resumido em um parágrafo, o link da visão geral e a
-  tabela de specs. Grave a chave em `jira:` no frontmatter da visão geral **logo
-  depois de criar**.
+  tabela de specs, com as canceladas marcadas e fora do total. Grave a chave em
+  `jira:` no frontmatter da visão geral **logo depois de criar**.
 - Com chave: leia o épico e edite só o que mudou, incluindo título e
   componente fora do padrão.
 
@@ -121,8 +129,9 @@ bloqueia a spec). Antes,
 leia os links do card (`getJiraIssue` com `view: "evidence"`, campo `issuelinks`) e
 pule os que já existem.
 
-Um link que existe no Jira e não está na spec é só **listado** no relatório.
-Remover link é destrutivo, e quem decide é o usuário.
+Um link que existe no Jira e não está na spec é só **listado** no relatório,
+inclusive os que uma change request deixou para trás. Remover link é destrutivo, e
+quem decide é o usuário.
 
 ## 6. Sprint (só com `--sprint`)
 
@@ -141,8 +150,11 @@ sprint.
 ## 7. Relatório
 
 Tabela spec → chave → ação (criado, atualizado, sem mudança), mais os links criados
-e os que sobraram no Jira. Lembre o usuário que as chaves gravadas nos arquivos
-precisam ir para o repositório, num commit `docs(<sigla>): chaves do Jira`.
+e os que sobraram no Jira. Liste à parte as specs puladas que têm card: as
+canceladas, para o usuário fechar ou descartar o card, e as que voltaram para
+rascunho, que o card acompanha depois da nova aprovação. Lembre o usuário que as
+chaves gravadas nos arquivos precisam ir para o repositório, num commit
+`docs(<sigla>): chaves do Jira`.
 
 Com `--confirmado`, se alguma chave foi gravada, faça isso você mesmo:
 

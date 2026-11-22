@@ -3,7 +3,7 @@ id: <sigla>-NN              # identifica a spec em branch, commit, card e depend
 tipo: feat                  # feat | fix | refactor: tipo da branch e dos commits
 depende_de: []              # ids de outras specs, deste ou de outro grupo: [conta-01]
 estimativa_h: 4             # 1, 2, 4, 6 ou 8
-status: rascunho            # rascunho | aprovada: só aprovada vai para o Jira
+status: rascunho            # rascunho | aprovada | cancelada: só aprovada vai ao Jira
 jira:                       # chave do card, preenchida pelo /fluxo:jira
 ---
 
@@ -11,7 +11,8 @@ jira:                       # chave do card, preenchida pelo /fluxo:jira
 
 <Se a spec muda comportamento, uma frase ou uma lista do que muda para quem usa.
 Refactor puro: "Não muda comportamento.". Se depende de outra spec, diga o que ela
-entrega e esta usa.>
+entrega e esta usa. Se o grupo tem `requisitos.md`, diga os requisitos que ela
+atende ou prepara: "Atende R2 e R5.".>
 
 ## O problema
 

@@ -1,7 +1,7 @@
 {
   "name": "fluxo",
-  "version": "0.6.0",
-  "description": "Entrega guiada por specs: escreve as specs no repositório, espelha no Jira e implementa com subagentes, entregando em branches locais ou PRs, e leva a base para a produção com os cards concluídos.",
+  "version": "0.7.0",
+  "description": "Entrega guiada por specs, da demanda ao faturamento: requisitos e estimativa, specs no repositório espelhadas no Jira, implementação com subagentes em sequência ou em lote, release com os cards concluídos e horas reais contra estimadas.",
   "author": {
     "name": "Kauan"
   }

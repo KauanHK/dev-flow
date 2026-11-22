@@ -13,8 +13,10 @@ Você é o orquestrador: lê as specs, pergunta o que falta, divide o trabalho, 
 subagentes, confere o resultado e entrega. **Você não escreve o código da
 implementação nem da correção:** isso é dos subagentes.
 
-Merge é sempre de uma pessoa: nunca faça merge, nunca dê push em `git.base` nem em
-`git.producao`, e nunca dê force push numa branch que já tem PR sem perguntar.
+Merge é sempre de uma pessoa: nunca faça merge, nunca dê push em `git.base`, em
+`git.producao` nem nas `git.protegidas`, e nunca dê force push numa branch que já
+tem PR sem perguntar. A `git.producao` e as `git.protegidas` nunca são base de uma
+spec, a não ser a que for também a `git.base`.
 
 ## 1. Pré-condições
 
@@ -38,6 +40,10 @@ Para achar o arquivo de uma chave: `grep -rlE '^jira: *<CHAVE>( |$)' <specs.dir>
 - Os metadados estão no frontmatter YAML: `id`, `tipo`, `depende_de`, `status` e
   `jira`. Spec com `status: rascunho` não vira código: entrada de uma spec só, pare e
   pergunte; num grupo, ela e as que dependem dela ficam de fora, e você avisa.
+- Spec com `status: cancelada` nunca vira código nem conta para nada: entrada de
+  uma spec só, diga isso e pare; num grupo, ela sai em silêncio, e o plano do passo
+  4 a cita numa linha. Spec cujo `depende_de` cita uma cancelada está errada: pare
+  antes de começar e proponha a correção da spec, como no passo 6.
 - Leia a visão geral do grupo **inteira**: decisões, regras que valem para todas as
   specs e versões. Leia cada spec e as do `depende_de`, que podem estar em outro
   grupo (ache pelo `id` em `<specs.dir>`).
@@ -81,8 +87,21 @@ branches diferentes, pergunte: uma branch nasce de uma base só.
 com as outras e liste as aguardando no relatório, dizendo qual merge cada uma espera
 e que basta rodar de novo depois dele.
 
+**Limite de PRs abertos.** Só com entrega por PRs e `git.limite_prs` preenchido.
+Conte os PRs de spec abertos no repositório
+(`gh pr list --state open --limit 100 --json number,headRefName`): os cuja branch
+é `<tipo>/<id>-<slug>` com o `id` de uma spec de `<specs.dir>`, empilhados ou não,
+de qualquer grupo. PRs `docs/*`, de changelog, de release e avulsos não contam, nem
+o de spec `cancelada`, que espera o usuário fechá-lo: cite-o no plano. As vagas
+são o limite menos essa conta, e as specs, na ordem de execução, ocupam as vagas.
+Spec retomada que já tem PR aberto não ocupa vaga nova. As que passam do
+limite aguardam vaga: elas e as que dependem delas não começam nesta execução.
+Passe do limite só se o usuário pedir, e só nesta execução; não pergunte por conta
+própria se é para passar.
+
 Mostre ao usuário, antes de começar, as specs na ordem com a base de cada uma e as
-que ficaram de fora. Depois, repita os passos 5 a 10 para cada spec, uma de cada vez.
+que ficaram de fora: aguardando merge, aguardando vaga e, numa linha, as
+canceladas. Depois, repita os passos 5 a 10 para cada spec, uma de cada vez.
 Se você parar por causa de uma spec, chame o usuário e não siga para a próxima sem a
 resposta dele.
 
@@ -95,6 +114,14 @@ Nome: `<tipo>/<id>-<slug>`, com o `tipo` do frontmatter e o slug do nome do arqu
   `origin/<base>`, ou `<base>` se ela só existir localmente.
 - A branch já existe: é trabalho retomado. Entre nela e leia `git log <base>..HEAD`
   e os critérios já marcados antes de continuar. O que já foi feito sai das etapas.
+  - Branch numa worktree que o `/fluxo:lote` deixou (`git worktree list`): o git
+    não troca para ela. Pergunte se a worktree pode sair (`git worktree remove`) ou
+    se é para retomar pelo `/fluxo:lote`.
+  - Spec que mudou na base depois que a branch nasceu
+    (`git log <branch>..origin/<git.base> -- <spec>` não vazio: uma change request
+    a alterou): a versão da base vale. Mostre a diferença e pergunte antes de
+    seguir; o normal é refazer a base da branch sobre a base, para os subagentes
+    lerem a spec nova.
 
 **Dependência que entrou na base.** Se a branch foi empilhada sobre uma dependência
 cujo PR já teve merge, ela ainda carrega os commits da dependência, que entraram
@@ -275,6 +302,9 @@ Quando todas as specs terminarem, diga ao usuário:
 - que, depois dos merges, o `/fluxo:entregar` escreve o changelog, abre o PR de
   release e conclui os cards que chegarem à produção;
 - as specs aguardando ou de fora, e o que cada uma espera;
+- as que aguardam vaga: o merge de qualquer PR de spec libera uma, e basta rodar
+  de novo; se o usuário mandou passar do limite, quantos PRs de spec ficaram
+  abertos;
 - as pendências e as notas da revisão;
 - onde o projeto segue outro jeito que o padrão do plugin sem regra que o
   registre, com a regra de `.claude/rules/` que você sugere;
