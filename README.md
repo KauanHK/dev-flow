@@ -38,6 +38,7 @@ instalação feita pelo `/plugin` é uma cópia: depois de editar as skills, sub
 | `/fluxo:jira <pasta do grupo> [--sprint [<sprint>]] [--confirmado]` | Espelha o grupo no Jira: épico, cards, links "bloqueia" e estimativa. Grava as chaves nas specs. Com `--confirmado`, segue sem perguntar e publica as chaves num PR (para rotinas na cloud) |
 | `/fluxo:implementar <spec, grupo ou chave>` | Divide em etapas, implementa, revisa e corrige com subagentes, e entrega em branches locais ou em PRs, empilhados ou não, com o card atualizado |
 | `/fluxo:revisar [PR, branch ou spec] [--base <branch>] [--comentar]` | Confere a implementação contra a spec e os padrões das camadas do diff num agente que só lê, e devolve um relatório com veredito. Com `--comentar`, publica o relatório no PR |
+| `/fluxo:entregar [vX.Y.Z]` | Depois dos merges: redireciona para a base os PRs filhos cujo pai teve merge, escreve a entrada do changelog num PR para a base, abre o PR de release para a produção, conclui os cards que chegaram à produção e fecha o épico do grupo entregue. Cada rodada para no próximo merge |
 
 O caminho típico de uma demanda:
 
@@ -50,6 +51,11 @@ O caminho típico de uma demanda:
    aberto fica aguardando o merge. Para trabalhar em paralelo, abra uma sessão por
    spec com `claude --worktree <nome>`.
 5. Você revisa e faz o merge de cada PR. O merge nunca é do agente.
+6. `/fluxo:entregar` depois dos merges. Ele redireciona para a base os PRs filhos
+   cujo pai teve merge e escreve a entrada do changelog num PR para a base. Depois
+   do merge dela, abre o PR de release; depois do merge do release, conclui os
+   cards que chegaram à produção e fecha o épico do grupo entregue por inteiro.
+   Cada rodada faz o que dá e diz qual merge destrava o resto.
 
 ## Na cloud
 
@@ -62,9 +68,11 @@ claude plugin install fluxo@kauan-plugins --scope user
 ```
 
 O resultado do setup fica em cache por alguns dias, então uma versão nova do
-plugin pode demorar a chegar. `implementar` e `jira` só rodam por comando: o
-prompt da rotina começa com o comando, e um prompt roda um comando só. Passe nos
-argumentos o que a skill perguntaria; no `/fluxo:jira`, use `--confirmado`.
+plugin pode demorar a chegar. `implementar`, `jira` e `entregar` só rodam por
+comando: o prompt da rotina começa com o comando, e um prompt roda um comando só.
+Passe nos argumentos o que a skill perguntaria; no `/fluxo:jira`, use
+`--confirmado`. O `/fluxo:entregar` ainda pede confirmação e não roda sem ninguém
+para responder.
 
 ## Subagentes do `implementar`
 
@@ -101,6 +109,10 @@ sozinhas fora do fluxo. Formato e como acrescentar um perfil:
 ## Regras que o plugin segue
 
 - O repositório é dono do conteúdo das specs; o Jira é dono do estado dos cards.
+- Um card só vai para concluído quando o código dele chega à produção, e o épico
+  quando o grupo chega inteiro. Quem move é o `/fluxo:entregar`.
+- Um PR filho cujo pai teve merge é redirecionado para a base antes do merge dele;
+  senão, o conteúdo cai na branch do pai e não chega à base.
 - Escrita no Jira só depois de confirmação. Numa rotina sem ninguém para
   responder, o `--confirmado` do `/fluxo:jira` é essa confirmação; nesse modo
   toda pergunta vira parada.
@@ -136,7 +148,6 @@ Na ordem do `fluxo.json`:
 
 - `lote`: implementa um grupo em paralelo, com uma worktree por spec e limite de PRs
   abertos. Em sequência, o `implementar` já faz o grupo.
-- `entregar`: entrada do changelog, PR de release e cards concluídos.
 - `intake` e `estimator`: transcrição para requisitos e quebra preliminar com horas
   para o orçamento.
 - Execução na cloud e o Hermes como canal com o cliente.

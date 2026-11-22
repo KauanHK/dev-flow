@@ -1,6 +1,6 @@
 # Configuração do plugin fluxo neste repositório.
-# Lida por /fluxo:specs, /fluxo:jira e /fluxo:implementar. Não guarda segredo:
-# vai para o git junto com o resto do projeto.
+# Lida por /fluxo:specs, /fluxo:jira, /fluxo:implementar e /fluxo:entregar. Não
+# guarda segredo: vai para o git junto com o resto do projeto.
 
 jira:
   site: empresaagentesia.atlassian.net
@@ -14,6 +14,7 @@ jira:
   status:                      # nome do status de destino em cada etapa
     em_andamento: Em andamento
     em_revisao: Em revisão     # vazio se o workflow não tiver; o card fica em andamento
+    concluido: Concluído       # card que chegou à produção e épico do grupo entregue
 
 git:
   base: dev                    # de onde nasce a branch de uma spec sem dependência aberta
