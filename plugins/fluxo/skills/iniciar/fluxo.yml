@@ -1,6 +1,6 @@
 # Configuração do plugin fluxo neste repositório.
-# Lida por /fluxo:specs, /fluxo:jira, /fluxo:implementar e /fluxo:entregar. Não
-# guarda segredo: vai para o git junto com o resto do projeto.
+# Lida pelas skills do /fluxo e pelo hook que guarda o git. Não guarda segredo:
+# vai para o git junto com o resto do projeto.
 
 jira:
   site: empresaagentesia.atlassian.net
@@ -19,6 +19,8 @@ jira:
 git:
   base: dev                    # de onde nasce a branch de uma spec sem dependência aberta
   producao: main               # só recebe o PR de release; nunca um PR de spec
+  protegidas: []               # outras branches sem push direto: [staging, release/*]
+  limite_prs: 3                # PRs de spec abertos ao mesmo tempo; vazio = sem limite
 
 specs:
   dir: docs                    # cada grupo em <dir>/<tema>/

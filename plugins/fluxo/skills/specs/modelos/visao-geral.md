@@ -12,7 +12,9 @@ D3–D9 de `docs/nfse/specs/00-VISAO-GERAL.md`, que continuam valendo.">
 ## Contexto
 
 <De onde veio a demanda (cliente, data, canal), o que está em jogo e o que foi
-conferido no código. Separe o que foi verificado do que é suposição.>
+conferido no código. Separe o que foi verificado do que é suposição. Se a pasta tem
+`requisitos.md` ou `estimativa.md`, cite-os e diga os requisitos que ficaram fora
+das specs, com o porquê.>
 
 ## Decisões já tomadas
 
@@ -26,6 +28,23 @@ conferido no código. Separe o que foi verificado do que é suposição.>
 |---|---|---|---|
 | [01](01-<slug>.md) | <resultado, não tarefa> | — | <N>h |
 | | **Total** | | **<soma>h** |
+
+<Spec cancelada por uma change request continua na tabela, com "cancelada na CRN"
+em "O que entrega" e a estimativa riscada (`~~4h~~`), fora do total.>
+
+## Mudanças de escopo
+
+<Só depois da primeira change request; num grupo novo, remova a seção. Uma linha
+por CR, na ordem. O pedido vem resumido, com a origem: cliente, canal e data. O que
+muda lista as specs novas, alteradas e canceladas. O Δ é a soma das diferenças de
+estimativa, com sinal. O aditivo são as horas que o cliente aprova: o Δ vezes a
+`calibracao` da `estimativa.md` aprovada, ou `—` sem ela.>
+
+| CR | Data | Pedido | O que muda nas specs | Δ horas | Aditivo |
+|---|---|---|---|---|---|
+| CR1 | <AAAA-MM-DD> | <pedido> (<cliente>, <canal>, <data>) | nova 07; alterada 03 (4h → 6h); cancelada 05 | +4h | +5h |
+
+Total: <soma>h antes da CR1 → <soma>h depois da CR<N>.
 
 ## Ordem de execução
 

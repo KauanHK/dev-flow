@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "fluxo",
-      "description": "Entrega guiada por specs: escreve as specs no repositório, espelha no Jira e implementa cada spec num PR.",
+      "description": "Entrega guiada por specs, da demanda ao faturamento: requisitos, estimativa, specs, Jira, PRs, release e horas.",
       "source": "./plugins/fluxo",
       "category": "productivity"
     }

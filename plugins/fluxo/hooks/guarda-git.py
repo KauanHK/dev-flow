@@ -4,7 +4,9 @@ Vale só em repositórios com `.claude/fluxo.yml`. Pede confirmação da pessoa
 (`permissionDecision: ask`) quando um comando Bash:
 
 - faz `gh pr merge`: o merge é de quem revisa;
-- faz `git push` para `git.base` ou `git.producao`, inclusive apagando a branch;
+- faz `git push` para uma branch protegida, inclusive apagando a branch: a
+  `git.base`, a `git.producao` (`main` e `master` se as duas estão vazias) e as
+  de `git.protegidas`, cujos itens podem ser padrões `fnmatch` (`release/*`);
 - faz force push (`-f`, `--force*`, `+refspec`) ou `--all`, `--mirror`, `--prune`.
 
 O resto passa sem saída, e a permissão segue o fluxo normal do Claude Code. É uma
@@ -12,6 +14,7 @@ grade de proteção, não uma barreira de segurança: a análise do comando é d
 melhor esforço e erra para o lado de perguntar.
 """
 
+import fnmatch
 import json
 import os
 import re
@@ -56,23 +59,52 @@ def achar_config(diretorio):
 
 
 def ler_protegidas(caminho):
-    """`git.base` e `git.producao` do fluxo.yml, sem depender de PyYAML."""
+    """Branches protegidas do fluxo.yml, sem depender de PyYAML.
+
+    São a `git.base` e a `git.producao` (`main` e `master` se as duas estão
+    vazias) mais os itens de `git.protegidas`. A chave aceita lista inline
+    (`[staging, release/*]`), lista em bloco (`- staging`) ou um valor só.
+    """
     secao = None
     valores = {}
+    extras = []
+    recuo_lista = None  # recuo de `protegidas:` enquanto a lista em bloco segue
     with open(caminho, encoding="utf-8") as arquivo:
         for linha in arquivo:
             linha = re.sub(r"(^|\s)#.*$", "", linha.rstrip("\n"))
             if not linha.strip():
                 continue
-            if not linha[0].isspace():
+            recuo = len(linha) - len(linha.lstrip())
+            if recuo_lista is not None:
+                item = re.match(r"\s*-(\s.*|)$", linha)
+                if item and recuo >= recuo_lista:
+                    extras.append(item.group(1))
+                    continue
+                recuo_lista = None
+            if not recuo:
                 secao = linha.split(":", 1)[0].strip()
                 continue
-            achado = re.match(r"\s+(base|producao):\s*(.*)$", linha)
-            if secao == "git" and achado:
-                valor = achado.group(2).strip().strip("'\"")
+            achado = re.match(r"\s+(base|producao|protegidas):\s*(.*)$", linha)
+            if secao != "git" or not achado:
+                continue
+            chave, valor = achado.group(1), achado.group(2).strip()
+            if chave != "protegidas":
+                valor = valor.strip("'\"")
                 if valor:
-                    valores[achado.group(1)] = valor
-    return set(valores.values()) or set(PADRAO_PROTEGIDAS)
+                    valores[chave] = valor
+            elif valor.startswith("["):
+                extras += valor.strip("[]").split(",")
+            elif valor:
+                extras.append(valor)
+            else:
+                recuo_lista = recuo
+    protegidas = set(valores.values()) or set(PADRAO_PROTEGIDAS)
+    return protegidas | ({item.strip().strip("'\"") for item in extras} - {""})
+
+
+def protegida(branch, protegidas):
+    """Se a branch está em `protegidas`, pelo nome ou por um padrão `fnmatch`."""
+    return bool(branch) and any(fnmatch.fnmatchcase(branch, item) for item in protegidas)
 
 
 def tirar_heredocs(comando):
@@ -191,7 +223,7 @@ def analisar_push(args, diretorio, protegidas):
             destino = branch_atual(diretorio)
         destinos[destino.removeprefix("refs/heads/")] = apagar or (dois_pontos and not origem)
 
-    for destino in sorted(destinos.keys() & protegidas):
+    for destino in sorted(d for d in destinos if protegida(d, protegidas)):
         acao = "apaga" if destinos[destino] else "envia direto para"
         motivos.append(f"{acao} a branch protegida `{destino}`, que só recebe PR revisado")
     return motivos

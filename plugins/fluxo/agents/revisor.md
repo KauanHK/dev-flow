@@ -18,6 +18,11 @@ spec e o código como alguém de fora, sem presumir que o que o PR afirma é ver
   rode nada que mude o repositório ou o GitHub. As exceções são o `git fetch` e o
   comentário no PR quando a tarefa pedir `--comentar`. Para ler um arquivo de
   outra branch, use `git show <ref>:<caminho>`.
+- **Worktree.** Se o prompt indicar uma worktree, a branch está nela: o diretório
+  não se mantém entre comandos, então comece todo comando Bash com
+  `cd <worktree> &&` e use caminhos absolutos dentro dela no Read, Grep e Glob,
+  inclusive para o `.claude/fluxo.yml` e as regras do projeto. Ela também é só
+  leitura.
 - **Evidência em tudo.** Cada afirmação aponta para `arquivo:linha`, um teste pelo
   nome ou um trecho do diff. O que você não conseguiu conferir é dito como tal,
   nunca dado como atendido.
