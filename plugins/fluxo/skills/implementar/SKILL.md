@@ -234,8 +234,8 @@ não crie outro: atualize o corpo com `gh pr edit`. O título é
 ```markdown
 Implementa a [spec NN de <grupo> — <título>](<link da spec na branch>). <Uma ou duas
 frases do problema e do que muda para quem usa.> <Versão: "não abre versão; a
-entrada do changelog vai num PR próprio quando o grupo fechar", ou "sai sozinha na
-vX.Y.Z".>
+entrada do changelog vai num PR próprio, pelo `/fluxo:entregar`", ou "sai sozinha
+na vX.Y.Z".>
 
 <Se empilhado: "Empilhado sobre #N (spec MM): revisar e fazer merge depois dele.">
 
@@ -269,8 +269,11 @@ Quando todas as specs terminarem, diga ao usuário:
 
 - o que foi entregue: cada branch ou PR, com a base;
 - com PRs empilhados, a ordem de merge, de baixo para cima, e que cada PR filho tem
-  que ser redirecionado para `git.base` depois do merge do pai (rodar de novo o
-  `/fluxo:implementar` na spec faz isso);
+  que ser redirecionado para `git.base` depois do merge do pai: o
+  `/fluxo:entregar` faz isso para todas as pilhas, e rodar de novo o
+  `/fluxo:implementar` na spec também;
+- que, depois dos merges, o `/fluxo:entregar` escreve o changelog, abre o PR de
+  release e conclui os cards que chegarem à produção;
 - as specs aguardando ou de fora, e o que cada uma espera;
 - as pendências e as notas da revisão;
 - onde o projeto segue outro jeito que o padrão do plugin sem regra que o

@@ -58,6 +58,13 @@ gravam no repositório do projeto:
   `allowed-tools` de git/gh de leitura) e devolve um relatório com veredito. O
   `implementar` chama o mesmo agente pelo `Agent`, apontando para o `SKILL.md`, para
   poder passar modelo e esforço.
+- `entregar` fecha o ciclo depois dos merges, lendo o estado do GitHub e do Jira:
+  redireciona PRs filhos cujo pai teve merge (com `rebase --onto` se o pai teve
+  squash) e recupera o conteúdo que caiu numa branch já mesclada; escreve a
+  entrada do `changelog` num PR `docs/changelog-vX.Y.Z` para a base; abre o PR de
+  release `git.base` → `git.producao`; e leva para `jira.status.concluido` os
+  cards que chegaram à produção e o épico do grupo entregue por inteiro. É
+  idempotente: cada rodada para no próximo merge humano.
 
 **Padrões** (`plugins/fluxo/padroes/<perfil>/<camada>.md`): o que os subagentes
 seguem ao escrever código, um arquivo por camada, com `paths:` no frontmatter no
@@ -68,8 +75,8 @@ vale mais; `substitui: true` troca a camada) e as outras regras do projeto que
 cobrem a etapa. O `revisar` monta a mesma lista a partir do diff. Regra de negócio
 e histórico de um projeto não entram no perfil. Detalhes em `padroes/README.md`.
 
-`implementar` e `jira` têm `disable-model-invocation: true`: só rodam por comando
-explícito do usuário.
+`implementar`, `jira` e `entregar` têm `disable-model-invocation: true`: só rodam
+por comando explícito do usuário.
 
 **Hook** `plugins/fluxo/hooks/guarda-git.py` (registrado em `hooks/hooks.json`
 como `PreToolUse` de `Bash`): só age se achar `.claude/fluxo.yml` (inclusive na

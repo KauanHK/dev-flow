@@ -67,7 +67,9 @@ lista de ferramentas, ache o nome exato com `discover`; nunca invente um.
    revisão". O de revisão nem sempre tem esse nome (no DES é
    `Implantação/Testes`): mostre ao usuário os outros statuses da categoria "em
    andamento" e pergunte qual recebe o card quando o PR abre. Se nenhum servir,
-   deixe `status.em_revisao` vazio.
+   deixe `status.em_revisao` vazio. O de concluído é o da categoria "done" (no
+   DES, `Concluído`); com mais de um, pergunte. Ele recebe o card quando o código
+   chega à produção e o épico quando o grupo chega inteiro.
 8. Quadro (`listJiraBoards`): se o projeto tiver um board scrum, grave o id em
    `jira.quadro`. Sem board scrum, deixe vazio, e o fluxo não mexe em sprint.
 
